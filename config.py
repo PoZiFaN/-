@@ -20,7 +20,10 @@ ORIENTATION_FRONTAL = "frontal"  # Спереди (0°)
 # Основные настройки упражнения
 SQUAT_DEPTH, RESET_ANGLE   = 110, 160
 WARN_OFFSET, BAD_OFFSET    = 30, 45
-CALIBRATION_FRAMES         = int(TARGET_FPS * 2.0)  # 30 кадров (2 секунды)
+
+# Калибровка увеличена до 7.0 секунд (105 кадров при 15 FPS)
+# Это дает спортсмену достаточно времени, чтобы занять исходное положение и зафиксировать стойку.
+CALIBRATION_FRAMES         = int(TARGET_FPS * 7.0)  
 DEBOUNCE_FRAMES            = 2  # Уменьшено из-за низкого FPS
 ERROR_DEBOUNCE_FRAMES      = 2  # Базовый антидребезг
 
