@@ -1,0 +1,8 @@
+Rep,Quality,Max Lean,Min Knee,Issues
+1,WARNING,63,39,HOLD STEADY!
+2,WARNING,62,62,СЛИШКОМ БЫСТРЫЙ СПУСК|HOLD STEADY!|ПРИСЕДАЙ ЧУТЬ ГЛУБЖЕ
+3,WARNING,29,67,СЛИШКОМ БЫСТРЫЙ СПУСК|HOLD STEADY!|ПРИСЕДАЙ ЧУТЬ ГЛУБЖЕ
+4,WARNING,28,45,СЛИШКОМ БЫСТРЫЙ СПУСК|HOLD STEADY!
+5,WARNING,25,70,СЛИШКОМ БЫСТРЫЙ СПУСК|НЕДОСЕД (ПОЛУПРИСЕД)
+
+TOTAL,5,GOOD,0
