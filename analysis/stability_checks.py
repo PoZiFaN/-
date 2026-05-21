@@ -20,10 +20,5 @@ class StabilityTracker:
             self.reset()
 
     def check(self) -> tuple[str, str]:
-        if len(self._buf) < 5:
-            return "", ""
-        arr = np.array(self._buf)
-        std = float(np.std(arr))
-        if std > config.STABILITY_THRESHOLD:
-            return "HOLD STEADY!", "WARNING"
+        # Полностью отключено по требованию пользователя во избежание раздражающих подсказок
         return "", ""

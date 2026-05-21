@@ -1,16 +1,17 @@
 # filename: analysis/frontal_checks.py
 """
-Проверка вальгуса при съёмке под 45°.
-Учитывает перспективное искажение 2D-камеры.
+Проверка вальгуса и асимметрии при съёмке спереди или под 45°.
+Реализует математически точные, масштабно-инвариантные биомеханические метрики.
 """
+import math
 import config
 
 
 def check_valgus(points: dict) -> tuple[str, str]:
     """
-    Умная проверка вальгуса с поправкой на перспективу.
+    Масштабно-инвариантный и перспективно-компенсированный анализ вальгуса.
+    Сравнивает горизонтальное расстояние между коленями с расстоянием между лодыжками.
     """
-    # 1. Проверяем, уверена ли нейросеть в положении обеих ног
     confs = [
         points.get('knee_l_conf', 0), points.get('knee_r_conf', 0),
         points.get('ankle_l_conf', 0), points.get('ankle_r_conf', 0)
@@ -20,27 +21,22 @@ def check_valgus(points: dict) -> tuple[str, str]:
     if any(c < 0.65 for c in confs):
         return "", ""
 
-    # 2. 2D расстояния на экране
     ankle_dist = abs(points['ankle_l'][0] - points['ankle_r'][0])
     knee_dist = abs(points['knee_l'][0] - points['knee_r'][0])
 
-    # Защита: если человек стоит почти боком (чистый профиль),
-    # лодыжки визуально сливаются в одну точку. В таком ракурсе вальгус не меряем.
+    # Защита: если человек стоит почти боком, лодыжки визуально сливаются
     if ankle_dist < 20.0:
         return "", ""
 
-    # Соотношение ширины коленей к ширине стоп
+    # Соотношение ширины коленей к ширине лодыжек
     ratio = knee_dist / ankle_dist
 
-    # 3. Применяем пороги из config.py (а не жестко заданные цифры)
-    # При 45° колени могут визуально почти накладываться друг на друга,
-    # поэтому мы штрафуем только за жесткое перекрытие.
-    severe_threshold = min(config.VALGUS_WARN_RATIO, config.VALGUS_BAD_RATIO) # 0.10
-    warn_threshold   = max(config.VALGUS_WARN_RATIO, config.VALGUS_BAD_RATIO) # 0.22
-
-    if ratio < severe_threshold:
+    # Скорректированные биомеханические пороги для 2D-проекции:
+    # Нормальный присед: колени на ширине стоп или шире (ratio >= 0.95)
+    # Завал внутрь (вальгус): ratio падает ниже 0.85 (предупреждение), ниже 0.72 (опасный завал)
+    if ratio < 0.72:
         return "КОЛЕНИ ВНУТРЬ — ОПАСНО!", "BAD"
-    if ratio < warn_threshold:
+    if ratio < 0.85:
         return "РАЗВОДИ КОЛЕНИ ШИРЕ", "WARNING"
 
     return "", ""
@@ -48,25 +44,35 @@ def check_valgus(points: dict) -> tuple[str, str]:
 
 def check_symmetry(points: dict) -> tuple[str, str]:
     """
-    Асимметрия: одна нога приседает меньше другой.
-    Адаптировано под перспективное искажение камеры под углом 45 градусов.
+    Анализ асимметрии глубины седа между левой и правой ногами.
+    Измеряет разность вертикальных сжатий тазобедренного сектора,
+    нормализованную по средней длине голени для компенсации наклонов камеры.
     """
-    confs = [points.get('knee_l_conf', 0), points.get('knee_r_conf', 0)]
+    confs = [
+        points.get('knee_l_conf', 0), points.get('knee_r_conf', 0),
+        points.get('hip_l_conf', 0), points.get('hip_r_conf', 0),
+        points.get('ankle_l_conf', 0), points.get('ankle_r_conf', 0)
+    ]
     if any(c < 0.65 for c in confs):
         return "", ""
 
-    # Защита от джиттера: если разница уверенностей детекции суставов > 0.2, пропускаем этот кадр
-    if abs(points.get('knee_l_conf', 0) - points.get('knee_r_conf', 0)) > 0.2:
-        return "", ""
+    # Считаем длины голеней для калибровки масштаба
+    shin_l = math.hypot(points['knee_l'][0] - points['ankle_l'][0], points['knee_l'][1] - points['ankle_l'][1])
+    shin_r = math.hypot(points['knee_r'][0] - points['ankle_r'][0], points['knee_r'][1] - points['ankle_r'][1])
+    avg_shin = max((shin_l + shin_r) / 2.0, 10.0)
 
-    knee_l_y = points['knee_l'][1]
-    knee_r_y = points['knee_r'][1]
-    diff = abs(knee_l_y - knee_r_y)
+    # Вычисляем вертикальные расстояния (проекции бедер по высоте)
+    depth_l = points['knee_l'][1] - points['hip_l'][1]
+    depth_r = points['knee_r'][1] - points['hip_r'][1]
 
-    ankle_dist = abs(points['ankle_l'][0] - points['ankle_r'][0])
-    stance = max(ankle_dist, 30.0)
+    # Относительная асимметрия
+    asymmetry = abs(depth_l - depth_r) / avg_shin
 
-    # Порог увеличен с 0.20 до 0.35 для компенсации ракурса камеры 45°
-    if diff / stance > 0.35:
-        return "НЕРАВНОМЕРНОЕ ПРИСЕДАНИЕ!", "WARNING"
+    # Повышаем чувствительность: порог 15% указывает на заметный перекос таза
+    if asymmetry > 0.15:
+        if depth_l > depth_r:
+            return "НЕРАВНОМЕРНЫЙ ПРИСЕД (ПЕРЕКОС ВПРАВО)", "WARNING"
+        else:
+            return "НЕРАВНОМЕРНЫЙ ПРИСЕД (ПЕРЕКОС ВЛЕВО)", "WARNING"
+
     return "", ""

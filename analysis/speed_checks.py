@@ -39,21 +39,9 @@ class SpeedTracker:
             self.ascent_duration = now - self.ascent_start_time
 
     def check_descent(self) -> tuple[str, str]:
-        """
-        Проверяет скорость спуска на основе реального времени (time.perf_counter()).
-        Возвращает текстовое имя нарушения и его критичность для RepChecks.
-        """
-        min_time = getattr(config, "MIN_DESCENT_TIME", 0.5)
-        if 0 < self.descent_duration < min_time:
-            return "СЛИШКОМ БЫСТРЫЙ СПУСК", "WARNING"
+        # Отключено по требованию пользователя во избежание ложных подсказок скорости
         return "", ""
 
     def check_ascent(self) -> tuple[str, str]:
-        """
-        Проверяет скорость подъема на основе реального времени.
-        Возвращает текстовое имя нарушения и его критичность для RepChecks.
-        """
-        min_time = config.MIN_ASCENT_FRAMES / config.TARGET_FPS
-        if 0 < self.ascent_duration < min_time:
-            return "БЫСТРЫЙ ПОДЪЕМ", "WARNING"
+        # Отключено по требованию пользователя во избежание ложных подсказок скорости
         return "", ""

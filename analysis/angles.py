@@ -16,20 +16,15 @@ def calculate_angle(a: Point, b: Point, c: Point) -> int:
     return int(np.degrees(np.arccos(cos)))
 
 
-def calculate_inclination(p1: Point, p2: Point, side: str = "right") -> int:
+def calculate_inclination(p1: Point, p2: Point, knee_x: float = None, hip_x: float = None) -> int:
     """
-    Угол наклона отрезка p1-p2 относительно вертикали.
-    Учитывает сторону тела, чтобы наклон ВПЕРЕД всегда был положительным.
+    Вычисляет угол наклона отрезка p1-p2 относительно вертикали.
+    Использует абсолютное горизонтальное смещение, что делает расчет
+    полностью инвариантным к направлению взгляда (влево/вправо).
     p1 - плечо, p2 - таз.
     """
-    dx = p1[0] - p2[0]
-    dy = p1[1] - p2[1]  # В OpenCV Y растет вниз, поэтому dy обычно отрицательный
-
-    # Если стоим левым боком, инвертируем X, чтобы наклон вперед (влево)
-    # давал такой же результат, как наклон вправо.
-    if side == "left":
-        dx = -dx
-
-    # Мы используем arctan2(dx, dy), где dy берем по модулю,
-    # чтобы мерить отклонение от вертикальной оси.
-    return int(np.degrees(np.arctan2(dx, abs(dy))))
+    dx = abs(p1[0] - p2[0])
+    dy = abs(p1[1] - p2[1])
+    if dy == 0:
+        return 90
+    return int(np.degrees(np.arctan(dx / dy)))

@@ -37,8 +37,8 @@ class SquatEngine:
         Главный цикл управления.
         Обновляет объект state и возвращает True, если тренировка окончена.
         """
-        # 1. Обновляем показатели текущего кадра
-        state.metrics = FrameMetrics.compute(points)
+        # 1. Обновляем показатели текущего кадра с учетом ракурса камеры
+        state.metrics = FrameMetrics.compute(points, state.camera_orientation)
 
         # 2. Отрабатываем логику в зависимости от режима
         if state.mode == "CALIBRATION":

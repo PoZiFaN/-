@@ -1,0 +1,8 @@
+Rep,Quality,Max Lean,Min Knee,Issues
+1,WARNING,2,40,СЛЕДИ ЗА КОЛЕНОМ|СЛИШКОМ БЫСТРЫЙ СПУСК|HOLD STEADY!
+2,WARNING,0,43,СЛЕДИ ЗА КОЛЕНОМ|СЛИШКОМ БЫСТРЫЙ СПУСК|HOLD STEADY!
+3,WARNING,0,43,СЛИШКОМ БЫСТРЫЙ СПУСК|HOLD STEADY!
+4,WARNING,15,36,СЛЕДИ ЗА КОЛЕНОМ|СЛИШКОМ БЫСТРЫЙ СПУСК|HOLD STEADY!
+5,WARNING,10,46,СЛЕДИ ЗА КОЛЕНОМ|СЛИШКОМ БЫСТРЫЙ СПУСК|HOLD STEADY!
+
+TOTAL,5,GOOD,0

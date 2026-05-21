@@ -33,6 +33,7 @@ class Calibrator:
         if self._done:
             return True
 
+        # Вычисляем наклон спины по инвариантной формуле
         lean = calculate_inclination(points['shoulder'], points['hip'])
         self._frames.append(lean)
 
